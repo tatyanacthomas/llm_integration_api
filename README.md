@@ -6,35 +6,90 @@ Minimal provider-agnostic Python interfaces for building LLM integrations.
 
 ### Root
 
-- `pyproject.toml`
-	- Project metadata and tooling configuration.
-- `README.md`
-	- This guide.
+- `pyproject.toml` — project metadata and tooling configuration.
+- `uv.lock` — locked dependency versions for reproducible installs.
+- `README.md` — this guide.
 
-### Package: `llm_integration_api/`
+### Abstract interfaces: `llm_integration_api/interface/`
 
-- `client.py`
-	- Defines abstract class `Client`.
-	- Requires provider/model/api key properties and messaging/response methods.
-- `message.py`
-	- Defines abstract class `Message` with required `role` and `content` properties.
-- `response.py`
-	- Defines abstract class `Response` with required `content`, `prompt_tokens`, and
-		`completion_tokens` properties.
-- `exceptions.py`
-	- Defines `LLMIntegrationError` base exception and provider/request/message/response
-		specific subclasses.
+The provider-agnostic contracts that all implementations must satisfy.
 
-### Tests: `llm_integration_api/tests/`
+- `client.py` — abstract class `Client` with required `provider`, `api_key`, and `model`
+  properties plus `get_message()`, `send_message()`, `get_response()`, and
+  `display_response()` methods.
+- `message.py` — abstract class `Message` with required `role` and `content` properties.
+- `response.py` — abstract class `Response` with required `content`, `prompt_tokens`,
+  and `completion_tokens` properties.
+- `exceptions.py` — `LLMIntegrationError` base exception and the full hierarchy of
+  provider, request, message, and response specific subclasses.
 
-- `test_client.py`
-	- Verifies `Client` abstract contract and concrete property behavior.
-- `test_message.py`
-	- Verifies `Message` abstract contract and concrete property behavior.
-- `test_response.py`
-	- Verifies `Response` abstract contract and concrete property behavior.
-- `test_exceptions.py`
-	- Verifies exception inheritance and metadata (`provider`, `cause`) behavior.
+### Interface tests: `llm_integration_api/interface/tests/`
+
+- `test_client.py` — verifies `Client` abstract contract and concrete property behavior.
+- `test_message.py` — verifies `Message` abstract contract and concrete property behavior.
+- `test_response.py` — verifies `Response` abstract contract and concrete property behavior.
+- `test_exceptions.py` — verifies exception inheritance and metadata (`provider`, `cause`) behavior.
+
+### OpenRouter implementation: `llm_integration_api/open_router_impl/`
+
+A ready-to-use implementation targeting the [OpenRouter](https://openrouter.ai) API.
+OpenRouter provides a unified endpoint for hundreds of models from providers such as
+OpenAI, Anthropic, Google, and others.
+
+- `open_router_client.py` — `OpenRouterClient`, a concrete `Client` that posts conversation
+  history to `https://openrouter.ai/api/v1/chat/completions` and returns an
+  `OpenRouterResponse`. Constructor args: `api_key`, `model` (any OpenRouter model slug,
+  e.g. `"openai/gpt-4o"` or `"anthropic/claude-3.5-sonnet"`), optional `site_url` and
+  `app_name` forwarded as `HTTP-Referer` / `X-Title` headers.
+- `open_router_message.py` — `OpenRouterMessage`, a concrete `Message` that validates
+  `role` (`"system"`, `"user"`, or `"assistant"`) and non-empty `content`.
+- `open_router_response.py` — `OpenRouterResponse`, a concrete `Response` that parses the
+  raw JSON dict returned by OpenRouter and exposes `content`, `prompt_tokens`, and
+  `completion_tokens`.
+
+### OpenRouter tests: `llm_integration_api/open_router_impl/tests/`
+
+- `test_open_router_client.py` — client behavior, error handling, and HTTP edge cases.
+- `test_open_router_message.py` — role validation and empty-content guards.
+- `test_open_router_response.py` — response parsing and malformed payload handling.
+
+### Scripts: `scripts/`
+
+Runnable scripts for manual testing and exploration. Both scripts read
+`OPENROUTER_API_KEY` from a `.env` file in the project root.
+
+- `explore_model.py` — sends several example prompts
+  to `openai/gpt-4o-mini` and prints each response. Run with:
+  ```bash
+  uv run scripts/explore_model.py
+  ```
+- `test_api_key.py` — quick sanity-check that verifies the API key is set and that
+  OpenRouter accepts it. Run with:
+  ```bash
+  uv run scripts/test_api_key.py
+  ```
+
+### Example usage
+
+```python
+from llm_integration_api.open_router_impl.open_router_client import OpenRouterClient
+from llm_integration_api.open_router_impl.open_router_message import OpenRouterMessage
+
+client = OpenRouterClient(
+    api_key="your-openrouter-api-key",
+    model="openai/gpt-4o",
+    site_url="https://yourapp.example.com",  # optional
+    app_name="My App",                        # optional
+)
+
+history = [
+    OpenRouterMessage("system", "You are a helpful assistant."),
+    OpenRouterMessage("user", "What is the capital of France?"),
+]
+
+client.send_message(history)
+client.display_response()
+```
 
 ## Requirements
 
