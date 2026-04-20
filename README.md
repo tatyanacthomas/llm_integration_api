@@ -63,3 +63,24 @@ Run the full test suite:
 ```bash
 pytest -q
 ```
+
+## Using This API in Another Project
+You can consume this repository directly from GitHub using `uv`. From your other project's root directory:
+
+```bash
+uv add "llm-integration-api @ git+https://github.com/tatyanacthomas/llm_integration_api.git"
+```
+
+Then install/sync dependencies:
+
+```bash
+uv sync
+```
+
+You can now import from this package in your project code, for example:
+
+```python
+from llm_integration_api.client import Client
+from llm_integration_api.message import Message
+from llm_integration_api.response import Response
+```
