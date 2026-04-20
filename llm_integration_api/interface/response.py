@@ -3,7 +3,7 @@ from abc import ABC, abstractmethod
 from .exceptions import ResponseError
 
 class Response(ABC):
-    """Abstract base class representing a response from the provider.""" 
+    """Abstract base class representing a response from the provider."""
 
     @property
     @abstractmethod

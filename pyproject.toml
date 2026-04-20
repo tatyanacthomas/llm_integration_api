@@ -1,0 +1,24 @@
+[project]
+name = "llm-integration-api"
+version = "0.1.0"
+description = "Minimal LLM integration API helpers"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "python-dotenv>=1.2.2",
+    "requests>=2.32.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0",
+    "uv",
+]
+
+[tool.uv]
+package = false
+
+[tool.pytest.ini_options]
+pythonpath = [
+    ".",
+]

@@ -4,7 +4,7 @@ from .exceptions import ClientError, MessageError
 
 class Client(ABC):
     """Abstract base class representing an LLM Client."""
-    
+
     @property
     @abstractmethod
     def provider(self) -> str:
@@ -14,7 +14,7 @@ class Client(ABC):
         without error. If the client object is in an invalid or unusable state,
         implementations may raise ClientError or a more specific client-related
         subtype.
-        
+
         """
         raise ClientError("Subclasses must implement Client.provider")
 
@@ -27,7 +27,7 @@ class Client(ABC):
         without error. If the client object is in an invalid or unusable state,
         implementations may raise ClientError or a more specific client-related
         subtype.
-        
+
         """
         raise ClientError("Subclasses must implement Client.api_key")
 
@@ -40,10 +40,10 @@ class Client(ABC):
         without error. If the client object is in an invalid or unusable state,
         implementations may raise ClientError or a more specific client-related
         subtype.
-        
+
         """
         raise ClientError("Subclasses must implement Client.model")
-    
+
     # Message methods-----------------------------------------------------------------------------------------------------------
     @abstractmethod
     def get_message(self) -> dict:
@@ -57,7 +57,7 @@ class Client(ABC):
         raise ClientError("Subclasses must implement Client.send_message")
 
 
-        
+
     # Response methods-----------------------------------------------------------------------------------------------------------
     @abstractmethod
     def get_response(self) -> dict:
